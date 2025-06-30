@@ -228,7 +228,7 @@ The application uses SQLAlchemy relationships:
 
 ## License
 
-&copy; 2024 SkillHub. All rights reserved.
+&copy; 2025 SkillHub. All rights reserved.
 
 ## Support
 
