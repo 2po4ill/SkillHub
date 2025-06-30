@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block content %}
+<!-- Course Form Hero Section -->
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">{{ legend }}</h1>
+        <p class="lead mb-4">
+            {% if form.title.data %}Update your course information{% else %}Set up a new educational course{% endif %}
+        </p>
+    </div>
+</section>
+
+<!-- Course Form Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <form method="POST" action="">
+                            {{ form.hidden_tag() }}
+                            <fieldset class="form-group">
+                                <legend class="border-bottom mb-4">{{ legend }}</legend>
+                                {{ render_field(form.title) }}
+                                {{ render_field(form.description, kwargs={'rows': 4}) }}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ render_field(form.max_students_allowed) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ render_field(form.price) }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ render_field(form.tags, kwargs={'class':"form-select", 'multiple':"multiple"}) }}
+                                        <div class="form-text">Hold Ctrl/Cmd to select multiple tags</div>
+                                    </div>
+                                    {% if form.teacher_id %}
+                                    <div class="col-md-6">
+                                        {{ render_field(form.teacher_id, kwargs={'class':"form-select"}) }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-check my-3">
+                                    {{ form.is_active(class="form-check-input") }}
+                                    {{ form.is_active.label(class="form-check-label") }}
+                                </div>
+
+                            </fieldset>
+                            <hr class="my-4">
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('courses') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>Cancel
+                                </a>
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Auto-resize textarea
+document.getElementById('description').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+});
+</script>
+{% endblock %} 

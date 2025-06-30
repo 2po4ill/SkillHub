@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Profile Hero Section -->
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">My Profile</h1>
+        <p class="lead mb-4">Manage your account and view your progress</p>
+    </div>
+</section>
+
+<!-- Profile Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4">Welcome, {{ current_user.username }}!</h2>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Account Information</h5>
+                                <ul class="list-unstyled">
+                                    <li><strong>Username:</strong> {{ current_user.username }}</li>
+                                    <li><strong>Email:</strong> {{ current_user.email }}</li>
+                                    <li><strong>Member since:</strong> {{ current_user.registration_date.strftime('%B %d, %Y') }}</li>
+                                    <li><strong>Role:</strong> 
+                                        {% if current_user.is_admin %}Administrator
+                                        {% elif current_user.is_teacher %}Teacher
+                                        {% elif current_user.is_moderator %}Moderator
+                                        {% else %}Student
+                                        {% endif %}
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5>Quick Stats</h5>
+                                <ul class="list-unstyled">
+                                    <li><strong>Enrolled Courses:</strong> {{ current_user.courses_enrolled|length }}</li>
+                                    <li><strong>Completed Tasks:</strong> {{ current_user.answers|length }}</li>
+                                    {% if current_user.is_teacher %}
+                                    <li><strong>Teaching Courses:</strong> {{ current_user.courses_teaching|length }}</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <a href="{{ url_for('courses') }}" class="btn btn-primary me-2">
+                                <i class="fas fa-book me-1"></i>Browse Courses
+                            </a>
+                            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-1"></i>Go Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

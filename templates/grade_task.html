@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Grading Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('courses') }}" class="text-light">Courses</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.course_id) }}" class="text-light">{{ course.title }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('manage_tasks', course_id=course.course_id) }}" class="text-light">Tasks</a></li>
+                        <li class="breadcrumb-item active text-light" aria-current="page">Grade: {{ task.title }}</li>
+                    </ol>
+                </nav>
+                <h1 class="display-5 fw-bold mb-3">Grade Submissions</h1>
+                <p class="lead mb-4">{{ task.title }} - {{ submissions|length }} submissions to review</p>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-primary fs-6">{{ submissions|length }} Total</span>
+                    <span class="badge bg-warning fs-6">{{ submissions|selectattr('is_reviewed', 'equalto', false)|list|length }} Pending</span>
+                    <span class="badge bg-success fs-6">{{ submissions|selectattr('is_reviewed', 'equalto', true)|list|length }} Graded</span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{{ url_for('task_detail', course_id=course.course_id, task_id=task.task_id) }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Task
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Grading Section -->
+<section class="py-5">
+    <div class="container">
+        <!-- Task Information -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Task Information
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>{{ task.title }}</h5>
+                        <p class="text-cyan">{{ task.description[:200] }}{% if task.description|length > 200 %}...{% endif %}</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        {% if task.value %}
+                        <span class="badge bg-primary fs-6">Max Points: {{ task.value }}</span>
+                        {% endif %}
+                        <br>
+                        <small class="text-cyan">Course: {{ course.title }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submissions List -->
+        {% if submissions %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Student Submissions
+                </h3>
+            </div>
+            <div class="card-body">
+                {% for submission in submissions %}
+                <div class="card mb-3 {% if submission.is_reviewed %}border-success{% else %}border-warning{% endif %}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">{{ submission.user.username }}</h6>
+                            <small class="text-cyan">
+                                Submitted: {{ submission.creation_date.strftime('%B %d, %Y at %I:%M %p') }}
+                                {% if submission.update_date %}
+                                | Updated: {{ submission.update_date.strftime('%B %d, %Y at %I:%M %p') }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div>
+                            {% if submission.is_reviewed %}
+                            <span class="badge bg-success">Graded: {{ submission.evaluation }}/{{ task.value if task.value else 'N/A' }}</span>
+                            {% else %}
+                            <span class="badge bg-warning">Pending Review</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6>Student's Answer:</h6>
+                                <div class="border border-info rounded p-3 bg-dark text-info">
+                                    {{ submission.user_answer|nl2br }}
+                                </div>
+                                
+                                {% if submission.user_answer_adornment %}
+                                <div class="mt-3">
+                                    <h6>Attached File:</h6>
+                                    <a href="{{ submission.user_answer_adornment }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                                        <i class="fas fa-file me-1"></i>View Attachment
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <h6>Grading:</h6>
+                                <form method="POST" action="{{ url_for('grade_task', course_id=course.course_id, task_id=task.task_id) }}">
+                                    <input type="hidden" name="answer_id" value="{{ submission.answer_id }}">
+                                    <div class="mb-3">
+                                        <label for="evaluation_{{ submission.answer_id }}" class="form-label">Points</label>
+                                        <input type="number" class="form-control" 
+                                               id="evaluation_{{ submission.answer_id }}" 
+                                               name="evaluation" 
+                                               value="{{ submission.evaluation if submission.evaluation else '' }}"
+                                               min="0" 
+                                               max="{{ task.value if task.value else 100 }}"
+                                               {% if task.value %}placeholder="0-{{ task.value }}"{% else %}placeholder="0-100"{% endif %}>
+                                        {% if task.value %}
+                                        <div class="form-text">Max: {{ task.value }} points</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-check me-1"></i>
+                                        {% if submission.is_reviewed %}Update Grade{% else %}Grade Submission{% endif %}
+                                    </button>
+                                </form>
+                                
+                                {% if submission.is_reviewed %}
+                                <div class="mt-2">
+                                    <small class="text-success">
+                                        <i class="fas fa-check-circle me-1"></i>Graded
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Grading Summary -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>Grading Progress
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h4 class="text-primary">{{ submissions|length }}</h4>
+                                <small class="text-cyan">Total</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-warning">{{ submissions|selectattr('is_reviewed', 'equalto', false)|list|length }}</h4>
+                                <small class="text-cyan">Pending</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-success">{{ submissions|selectattr('is_reviewed', 'equalto', true)|list|length }}</h4>
+                                <small class="text-cyan">Graded</small>
+                            </div>
+                        </div>
+                        
+                        {% set graded_count = submissions|selectattr('is_reviewed', 'equalto', true)|list|length %}
+                        {% set total_count = submissions|length %}
+                        {% if total_count > 0 %}
+                        <div class="mt-3">
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ (graded_count / total_count * 100)|round }}%">
+                                    {{ (graded_count / total_count * 100)|round }}%
+                                </div>
+                            </div>
+                            <small class="text-cyan">Completion: {{ graded_count }}/{{ total_count }} submissions graded</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-star me-2"></i>Grade Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% set graded_submissions = submissions|selectattr('is_reviewed', 'equalto', true)|list %}
+                        {% if graded_submissions %}
+                            {% set avg_grade = (graded_submissions|sum(attribute='evaluation') / graded_submissions|length)|round(1) %}
+                            {% set max_grade = graded_submissions|max(attribute='evaluation') %}
+                            {% set min_grade = graded_submissions|min(attribute='evaluation') %}
+                            
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-chart-line text-primary me-2"></i>
+                                    <strong>Average Grade:</strong> {{ avg_grade }}/{{ task.value if task.value else 'N/A' }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-arrow-up text-success me-2"></i>
+                                    <strong>Highest Grade:</strong> {{ max_grade }}/{{ task.value if task.value else 'N/A' }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-arrow-down text-danger me-2"></i>
+                                    <strong>Lowest Grade:</strong> {{ min_grade }}/{{ task.value if task.value else 'N/A' }}
+                                </li>
+                            </ul>
+                        {% else %}
+                            <p class="text-cyan mb-0">No submissions graded yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-inbox fa-4x text-cyan mb-3"></i>
+                <h5>No submissions to grade</h5>
+                <p class="text-cyan">Students will appear here once they submit their answers.</p>
+                <a href="{{ url_for('task_detail', course_id=course.course_id, task_id=task.task_id) }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Task
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %} 

@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Course Detail Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold mb-3">{{ course.title }}</h1>
+                <p class="lead mb-4">{{ course.description }}</p>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for tag in course.tags %}
+                    <span class="badge" style="background-color: #{{ tag.color }};">
+                        {{ tag.title }}
+                    </span>
+                    {% endfor %}
+                </div>
+                <div class="d-flex align-items-center gap-4">
+                    <small class="text-light">
+                        <i class="fas fa-user me-1"></i>Teacher: {{ course.teacher.username if course.teacher else 'Unknown' }}
+                    </small>
+                    <small class="text-light">
+                        <i class="fas fa-users me-1"></i>{{ students_count }}/{{ course.max_students_allowed }} students
+                    </small>
+                    {% if course.price %}
+                    <small class="text-light">
+                        <i class="fas fa-dollar-sign me-1"></i>${{ "%.2f"|format(course.price) }}
+                    </small>
+                    {% else %}
+                    <small class="text-light">
+                        <i class="fas fa-gift me-1"></i>Free
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.user_id == course.teacher_id or current_user.is_admin %}
+                        <!-- Teacher/Admin Actions -->
+                        <a href="{{ url_for('edit_course', course_id=course.course_id) }}" class="btn btn-outline-light btn-lg me-2">
+                            <i class="fas fa-edit me-1"></i>Edit Course
+                        </a>
+                        <a href="{{ url_for('manage_tasks', course_id=course.course_id) }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-tasks me-1"></i>Manage Tasks
+                        </a>
+                    {% elif current_user in course.students %}
+                        <!-- Enrolled Student -->
+                        <span class="badge bg-success fs-6 px-3 py-2">
+                            <i class="fas fa-check me-1"></i>Enrolled
+                        </span>
+                    {% elif students_count < course.max_students_allowed %}
+                        <!-- Available for enrollment -->
+                        <form method="POST" action="{{ url_for('enroll_course', course_id=course.course_id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-light btn-lg">
+                                <i class="fas fa-plus me-1"></i>Enroll Now
+                            </button>
+                        </form>
+                    {% else %}
+                        <!-- Course Full -->
+                        <span class="badge bg-warning fs-6 px-3 py-2">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Course Full
+                        </span>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-sign-in-alt me-1"></i>Login to Enroll
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Course Content Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Tasks Section -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-tasks me-2"></i>Course Tasks
+                        </h3>
+                        {% if current_user.is_authenticated and (current_user.user_id == course.teacher_id or current_user.is_admin) %}
+                        <a href="{{ url_for('add_task', course_id=course.course_id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Add Task
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if tasks %}
+                        <div class="list-group list-group-flush">
+                            {% for task in tasks %}
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">{{ task.title }}</div>
+                                    <small class="text-info">{{ task.description[:100] }}{% if task.description|length > 100 %}...{% endif %}</small>
+                                    {% if task.value %}
+                                    <div class="mt-1">
+                                        <span class="badge bg-primary">Max Points: {{ task.value }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('task_detail', course_id=course.course_id, task_id=task.task_id) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </a>
+                                    {% if current_user.is_authenticated and (current_user.user_id == course.teacher_id or current_user.is_admin) %}
+                                    <a href="{{ url_for('edit_task', course_id=course.course_id, task_id=task.task_id) }}" 
+                                       class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-edit me-1"></i>Edit
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                            <h5>No tasks available yet</h5>
+                            <p class="text-muted">Tasks will appear here once they are added by the instructor.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Course Description -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Course Description
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-info">{{ course.description or 'No detailed description available.' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Course Info Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info me-2"></i>Course Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-user text-primary me-2"></i>
+                                <strong>Instructor:</strong> {{ course.teacher.username if course.teacher else 'Unknown' }}
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-users text-success me-2"></i>
+                                <strong>Students:</strong> {{ students_count }}/{{ course.max_students_allowed }}
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-tasks text-info me-2"></i>
+                                <strong>Tasks:</strong> {{ tasks|length }}
+                            </li>
+                            {% if course.price %}
+                            <li class="mb-2">
+                                <i class="fas fa-dollar-sign text-warning me-2"></i>
+                                <strong>Price:</strong> ${{ "%.2f"|format(course.price) }}
+                            </li>
+                            {% else %}
+                            <li class="mb-2">
+                                <i class="fas fa-gift text-success me-2"></i>
+                                <strong>Price:</strong> Free
+                            </li>
+                            {% endif %}
+                            <li class="mb-2">
+                                <i class="fas fa-calendar text-secondary me-2"></i>
+                                <strong>Status:</strong> 
+                                {% if course.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Enrollment Status -->
+                {% if current_user.is_authenticated %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-check me-2"></i>Your Status
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if current_user.user_id == course.teacher_id %}
+                        <div class="text-center bg-dark text-info rounded p-3">
+                            <i class="fas fa-chalkboard-teacher fa-2x text-primary mb-2"></i>
+                            <p class="mb-0"><strong>Course Instructor</strong></p>
+                            <small>You are teaching this course</small>
+                        </div>
+                        {% elif current_user in course.students %}
+                        <div class="text-center bg-dark text-info rounded p-3">
+                            <i class="fas fa-user-graduate fa-2x text-success mb-2"></i>
+                            <p class="mb-0"><strong>Enrolled Student</strong></p>
+                            <small>You are enrolled in this course</small>
+                        </div>
+                        {% else %}
+                        <div class="text-center bg-dark text-info rounded p-3">
+                            <i class="fas fa-user-plus fa-2x text-info mb-2"></i>
+                            <p class="mb-0"><strong>Not Enrolled</strong></p>
+                            <small>You can enroll in this course</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

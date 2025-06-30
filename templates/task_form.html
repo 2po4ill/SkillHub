@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block content %}
+<!-- Task Form Hero Section -->
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">{{ legend }}</h1>
+        <p class="lead mb-4">
+            {% if form.title.data %}Update task information for {{ course.title }}{% else %}Add a new task to {{ course.title }}{% endif %}
+        </p>
+    </div>
+</section>
+
+<!-- Task Form Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <form method="POST" action="">
+                            {{ form.hidden_tag() }}
+                            <fieldset class="form-group">
+                                <legend class="border-bottom mb-4">{{ legend }}</legend>
+                                {{ render_field(form.title) }}
+                                {{ render_field(form.description, kwargs={'rows': 6, 'placeholder': "Describe the task requirements, objectives, and what students need to do..."}) }}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ render_field(form.value, kwargs={'placeholder': "e.g., 10"}) }}
+                                    </div>
+                                    <div class="col-md-6 d-flex align-items-center">
+                                        <div class="form-check mt-3">
+                                            {{ form.is_exam(class="form-check-input") }}
+                                            {{ form.is_exam.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ render_field(form.start_date) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ render_field(form.deadline) }}
+                                    </div>
+                                </div>
+                                {{ render_field(form.solution, kwargs={'rows': 4, 'placeholder': "Provide a sample solution or answer key..."}) }}
+                            </fieldset>
+                            <hr class="my-4">
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('course_detail', course_id=course.course_id) }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>Cancel
+                                </a>
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Auto-resize textareas
+document.querySelectorAll('textarea').forEach(textarea => {
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+});
+
+// Set default dates if creating new task
+{% if not task %}
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const startDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Tomorrow
+    const deadline = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // Next week
+    
+    document.getElementById('start_date').value = startDate.toISOString().slice(0, 16);
+    document.getElementById('deadline').value = deadline.toISOString().slice(0, 16);
+});
+{% endif %}
+</script>
+{% endblock %} 

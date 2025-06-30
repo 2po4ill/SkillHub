@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title }}{% endblock %} - SkillHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #0a001a;
+            color: #fff;
+        }
+        .navbar, .footer {
+            background: #1a0033 !important;
+        }
+        .navbar-brand, .footer h5, .footer a {
+            color: #ff00cc !important;
+        }
+        .navbar-nav .nav-link, .navbar-nav .nav-link.active, .navbar-nav .nav-link:hover, .navbar-nav .nav-link:focus {
+            color: #fff !important;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #1a0033 0%, #ff00cc 60%, #00fff7 100%);
+            color: #fff;
+            padding: 100px 0;
+            box-shadow: 0 0 40px #ff00cc44;
+        }
+        .btn-primary, .btn-outline-light, .btn-light {
+            background: #ff00cc;
+            border: none;
+            color: #fff !important;
+        }
+        .btn-primary:hover, .btn-outline-light:hover, .btn-light:hover {
+            background: #00fff7;
+            color: #1a0033 !important;
+        }
+        .card {
+            background: #18122b;
+            border: 1px solid #ff00cc44;
+            box-shadow: 0 4px 16px #00fff744;
+            color: #fff;
+        }
+        .card-body, .list-group-item {
+            background: #18122b !important;
+            color: #fff !important;
+        }
+        .card-title, .card-text, .form-label, .form-control, .dropdown-menu, .dropdown-item, .table, .table th, .table td, .alert, .badge, .btn, .form-text, .text-muted, .text-light, .text-center, .text-success, .text-info, .text-warning, .text-danger {
+            color: #e0e0ff !important;
+        }
+        .dropdown-menu {
+            background: #18122b;
+        }
+        .dropdown-item:hover, .dropdown-item:focus {
+            background: #ff00cc;
+            color: #fff !important;
+        }
+        .breadcrumb {
+            color: #fff !important;
+        }
+        .badge.bg-primary {
+            background: #ff00cc !important;
+            color: #fff !important;
+        }
+        .badge.bg-success, .badge.bg-info {
+            background: #00fff7 !important;
+            color: #1a0033 !important;
+        }
+        .badge.bg-warning {
+            background: #ffb300 !important;
+            color: #1a0033 !important;
+        }
+        .badge.bg-secondary {
+            background: #1a0033 !important;
+            color: #fff !important;
+        }
+        .flash-messages .alert-success {
+            background: #00fff7;
+            color: #1a0033 !important;
+        }
+        .flash-messages .alert-danger {
+            background: #ff00cc;
+            color: #fff !important;
+        }
+        .flash-messages .alert-info {
+            background: #18122b !important;
+            color: #fff !important;
+            border: 1px solid #ff00cc44 !important;
+        }
+        .course-card:hover {
+            box-shadow: 0 8px 25px #ff00cc99, 0 0 40px #00fff799;
+        }
+        h1, h2, h3, h4, h5, h6, label, p, small, span, strong, b, th, td, li, a, .form-text {
+            color: #fff !important;
+        }
+        .form-control {
+            background: #18122b;
+            color: #fff !important;
+            border: 1px solid #00fff7;
+        }
+        .form-control:focus {
+            background: #18122b;
+            color: #fff !important;
+            border: 1px solid #ff00cc;
+            box-shadow: 0 0 0 0.2rem #ff00cc44;
+        }
+        ::placeholder {
+            color: #b3b3cc !important;
+            opacity: 1;
+        }
+        .alert {
+            color: #fff !important;
+        }
+        .table {
+            color: #fff !important;
+        }
+        .table th, .table td {
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">
+                <i class="fas fa-bolt me-2"></i>SkillHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('courses') }}">Courses</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about') }}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-light btn-sm me-2" href="{{ url_for('create_course') }}">
+                                <i class="fas fa-plus me-1"></i>Create Course
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i>{{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                                {% if current_user.is_teacher %}
+                                <li><a class="dropdown-item" href="#">My Courses</a></li>
+                                {% endif %}
+                                {% if current_user.is_admin %}
+                                <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-bolt me-2"></i>SkillHub</h5>
+                    <p>A modern cyberpunk university project hub built with Flask and Jinja.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('home') }}" class="text-light">Home</a></li>
+                        <li><a href="{{ url_for('courses') }}" class="text-light">Courses</a></li>
+                        <li><a href="{{ url_for('about') }}" class="text-light">About</a></li>
+                        <li><a href="{{ url_for('contact') }}" class="text-light">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p>&copy; 2025 SkillHub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
